@@ -8,17 +8,19 @@ import { toast } from 'react-toastify';
 import FormField from '@/components/FormField';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
-import { UpdateProfileData, User } from '@/types';
+import { UpdateProfileData } from '@/types';
 
+// Update the schema to match the UpdateProfileData interface
 const updateProfileSchema = z.object({
-  username: z.string().min(3, 'Username must be at least 3 characters'),
-  email: z.string().email('Invalid email address'),
-  name: z.string().min(2, 'Name must be at least 2 characters'),
+  username: z.string().min(3, 'Username must be at least 3 characters').optional(),
+  email: z.string().email('Invalid email address').optional(),
+  name: z.string().min(2, 'Name must be at least 2 characters').optional(),
   birthDate: z.string().refine((date) => {
+    if (!date) return true; // Skip validation if empty
     const parsedDate = new Date(date);
     return !isNaN(parsedDate.getTime());
-  }, 'Invalid date'),
-  gender: z.enum(['male', 'female', 'other']),
+  }, 'Invalid date').optional(),
+  gender: z.enum(['male', 'female', 'other']).optional(),
   description: z.string().optional(),
 });
 
@@ -58,8 +60,8 @@ export default function EditProfilePage() {
     try {
       await updateProfile(data);
       toast.success('Profile updated successfully!');
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to update profile');
+    } catch (error) {
+      toast.error(error?.response?.data?.message || 'Failed to update profile');
     } finally {
       setIsSubmitting(false);
     }
