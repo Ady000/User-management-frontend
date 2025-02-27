@@ -55,17 +55,25 @@ export default function EditProfilePage() {
     }
   }, [user, reset]);
 
-  const onSubmit = async (data: UpdateProfileData) => {
-    setIsSubmitting(true);
-    try {
-      await updateProfile(data);
-      toast.success('Profile updated successfully!');
-    } catch (error) {
-      toast.error(error?.response?.data?.message || 'Failed to update profile');
-    } finally {
-      setIsSubmitting(false);
+// Update the catch block in src/app/edit-profile/page.tsx
+
+const onSubmit = async (data: UpdateProfileData) => {
+  setIsSubmitting(true);
+  try {
+    await updateProfile(data);
+    toast.success('Profile updated successfully!');
+  } catch (error: unknown) {
+    // Type-safe error handling
+    if (error && typeof error === 'object' && 'response' in error) {
+      const axiosError = error as { response?: { data?: { message?: string } } };
+      toast.error(axiosError.response?.data?.message || 'Failed to update profile');
+    } else {
+      toast.error('Failed to update profile');
     }
-  };
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <ProtectedRoute>
